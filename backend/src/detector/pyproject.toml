@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "location-detector"
+version = "0.1.0"
+description = "OpenCV-based room boundary detector"
+authors = ["Innergy AI Team"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+opencv-python = "^4.8.0"
+numpy = "^1.24.0"
+pillow = "^10.0.0"
+boto3 = "^1.28.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+black = "^23.7.0"
+mypy = "^1.4.0"
+pylint = "^2.17.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
