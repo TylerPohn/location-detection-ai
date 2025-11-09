@@ -1,0 +1,15 @@
+{
+  "name": "firebase-admin-layer",
+  "version": "1.0.0",
+  "description": "Firebase Admin SDK Lambda Layer for authentication",
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  },
+  "scripts": {
+    "install-deps": "npm install --production"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

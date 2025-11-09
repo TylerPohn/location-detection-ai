@@ -6,6 +6,9 @@ node_modules/
 # Testing
 coverage/
 *.lcov
+.coverage
+.pytest_cache/
+htmlcov/
 
 # Production
 build/
@@ -23,6 +26,13 @@ dist/
 *.swp
 *.swo
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
 # OS
 .DS_Store
 Thumbs.db
@@ -30,12 +40,18 @@ Thumbs.db
 # AWS
 .aws/
 cdk.out/
+cdk-outputs.json
 
 # Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Playwright screenshots and artifacts
+.playwright-mcp/
+playwright-report/
+test-results/
 
 # Claude Flow generated files
 .claude/settings.local.json
@@ -63,3 +79,8 @@ coordination/orchestration/*
 claude-flow
 # Removed Windows wrapper files per user request
 hive-mind-prompt-*.txt
+
+# Deployment scripts with credentials (NEVER COMMIT)
+scripts/deploy-with-creds.sh
+scripts/deploy-backend.sh
+scripts/.env.deploy

@@ -1,14 +1,14 @@
 {
   "name": "inference-trigger",
   "version": "1.0.0",
-  "description": "Lambda function to trigger SageMaker async inference on S3 uploads",
+  "description": "Lambda function to trigger ML inference Lambda on S3 uploads",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@aws-sdk/client-sagemaker-runtime": "^3.400.0"
+    "@aws-sdk/client-lambda": "^3.400.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.119",

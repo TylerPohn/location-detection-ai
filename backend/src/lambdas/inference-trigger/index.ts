@@ -1,8 +1,8 @@
 import { S3Event } from 'aws-lambda';
-import { SageMakerRuntimeClient, InvokeEndpointAsyncCommand } from '@aws-sdk/client-sagemaker-runtime';
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 
-const sagemakerClient = new SageMakerRuntimeClient({ region: process.env.AWS_REGION });
-const ENDPOINT_NAME = process.env.SAGEMAKER_ENDPOINT_NAME!;
+const lambdaClient = new LambdaClient({ region: process.env.AWS_REGION });
+const ML_LAMBDA_ARN = process.env.ML_LAMBDA_ARN!;
 const RESULTS_BUCKET = process.env.RESULTS_BUCKET_NAME!;
 
 export const handler = async (event: S3Event): Promise<void> => {
@@ -21,34 +21,32 @@ export const handler = async (event: S3Event): Promise<void> => {
     // Extract job ID from key
     const jobId = key.split('/')[1].split('.')[0];
 
-    console.log(`Triggering inference for job ${jobId}: s3://${bucket}/${key}`);
+    console.log(`Triggering ML inference for job ${jobId}: s3://${bucket}/${key}`);
 
     try {
-      // Prepare input payload
+      // Prepare input payload for ML Lambda
       const inputPayload = {
         bucket: bucket,
         key: key,
-        metadata: {
-          jobId: jobId,
-          timestamp: new Date().toISOString(),
-        },
+        jobId: jobId,
+        timestamp: new Date().toISOString(),
       };
 
-      // Invoke SageMaker Async Endpoint
-      const command = new InvokeEndpointAsyncCommand({
-        EndpointName: ENDPOINT_NAME,
-        InputLocation: `s3://${bucket}/${key}`,
-        ContentType: 'application/json',
-        Accept: 'application/json',
-        InferenceId: jobId,
+      // Invoke ML inference Lambda
+      const command = new InvokeCommand({
+        FunctionName: ML_LAMBDA_ARN,
+        InvocationType: 'Event', // Async invocation
+        Payload: Buffer.from(JSON.stringify(inputPayload)),
       });
 
-      const response = await sagemakerClient.send(command);
+      const response = await lambdaClient.send(command);
 
-      console.log(`Inference triggered successfully:`, response);
-      console.log(`Output location: ${response.OutputLocation}`);
+      console.log(`ML inference triggered successfully for job ${jobId}:`, {
+        statusCode: response.StatusCode,
+        requestId: response.$metadata.requestId,
+      });
     } catch (error) {
-      console.error(`Error triggering inference for ${jobId}:`, error);
+      console.error(`Error triggering ML inference for ${jobId}:`, error);
       throw error;
     }
   }
