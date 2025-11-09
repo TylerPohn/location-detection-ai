@@ -7,21 +7,28 @@ import { Construct } from 'constructs';
 
 export interface StorageStackProps extends cdk.StackProps {
   environmentName: string;
-  encryptionKey: kms.IKey;
 }
 
 export class StorageStack extends cdk.Stack {
   public readonly blueprintBucket: s3.Bucket;
   public readonly resultsBucket: s3.Bucket;
+  public readonly encryptionKey: kms.Key;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
+
+    // Create KMS encryption key for storage buckets
+    this.encryptionKey = new kms.Key(this, 'StorageEncryptionKey', {
+      description: `Location Detection AI ${props.environmentName} storage encryption key`,
+      enableKeyRotation: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
 
     // Blueprint upload bucket
     this.blueprintBucket = new s3.Bucket(this, 'BlueprintBucket', {
       bucketName: `location-detection-blueprints-${props.environmentName}`,
       encryption: s3.BucketEncryption.KMS,
-      encryptionKey: props.encryptionKey,
+      encryptionKey: this.encryptionKey,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       versioned: true,
       lifecycleRules: [
@@ -34,9 +41,15 @@ export class StorageStack extends cdk.Stack {
       ],
       cors: [
         {
-          allowedOrigins: ['*'], // Update with actual frontend URL in production
+          allowedOrigins: [
+            process.env.FRONTEND_URL || 'http://localhost:5173',
+            // Add production URLs here
+            // 'https://your-production-domain.com',
+            // 'https://your-cloudfront-distribution.cloudfront.net',
+          ],
           allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT, s3.HttpMethods.POST],
           allowedHeaders: ['*'],
+          exposedHeaders: ['ETag'],
           maxAge: 3000,
         },
       ],
@@ -47,7 +60,7 @@ export class StorageStack extends cdk.Stack {
     this.resultsBucket = new s3.Bucket(this, 'ResultsBucket', {
       bucketName: `location-detection-results-${props.environmentName}`,
       encryption: s3.BucketEncryption.KMS,
-      encryptionKey: props.encryptionKey,
+      encryptionKey: this.encryptionKey,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       versioned: false,
       lifecycleRules: [

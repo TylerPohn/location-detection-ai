@@ -17,19 +17,12 @@ export class SageMakerStack extends cdk.Stack {
   public readonly endpoint: sagemaker.CfnEndpoint;
   public readonly endpointConfigName: string;
   public readonly modelName: string;
-  public readonly notificationTopic: sns.Topic;
   public readonly sagemakerRole: iam.Role;
 
   constructor(scope: Construct, id: string, props: SageMakerStackProps) {
     super(scope, id, props);
 
-    // SNS topic for async inference notifications
-    this.notificationTopic = new sns.Topic(this, 'InferenceNotifications', {
-      displayName: 'Location Detection Inference Notifications',
-      topicName: `location-detection-inference-${props.environmentName}`,
-    });
-
-    // SageMaker execution role
+    // SageMaker execution role (simplified - no SNS needed)
     this.sagemakerRole = new iam.Role(this, 'SageMakerRole', {
       assumedBy: new iam.ServicePrincipal('sagemaker.amazonaws.com'),
       managedPolicies: [
@@ -41,9 +34,6 @@ export class SageMakerStack extends cdk.Stack {
     props.blueprintBucket.grantRead(this.sagemakerRole);
     props.resultsBucket.grantWrite(this.sagemakerRole);
 
-    // Grant SNS publish
-    this.notificationTopic.grantPublish(this.sagemakerRole);
-
     // SageMaker Model
     this.modelName = `location-detector-${props.environmentName}`;
 
@@ -53,14 +43,10 @@ export class SageMakerStack extends cdk.Stack {
       primaryContainer: {
         image: props.modelImageUri,
         mode: 'SingleModel',
-        environment: {
-          SAGEMAKER_PROGRAM: 'inference.py',
-          SAGEMAKER_SUBMIT_DIRECTORY: '/opt/ml/code',
-        },
       },
     });
 
-    // Endpoint Configuration with Async Inference
+    // Endpoint Configuration (Real-time, synchronous)
     this.endpointConfigName = `location-detector-config-${props.environmentName}`;
 
     const endpointConfig = new sagemaker.CfnEndpointConfig(this, 'EndpointConfig', {
@@ -70,21 +56,10 @@ export class SageMakerStack extends cdk.Stack {
           modelName: model.modelName!,
           variantName: 'AllTraffic',
           initialInstanceCount: 1,
-          instanceType: 'ml.m5.xlarge',
+          instanceType: 'ml.t2.medium',  // Smaller, cheaper instance for real-time
+          initialVariantWeight: 1,
         },
       ],
-      asyncInferenceConfig: {
-        outputConfig: {
-          s3OutputPath: `s3://${props.resultsBucket.bucketName}/sagemaker-output/`,
-          notificationConfig: {
-            successTopic: this.notificationTopic.topicArn,
-            errorTopic: this.notificationTopic.topicArn,
-          },
-        },
-        clientConfig: {
-          maxConcurrentInvocationsPerInstance: 4,
-        },
-      },
     });
 
     endpointConfig.addDependency(model);
@@ -107,15 +82,9 @@ export class SageMakerStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'EndpointArn', {
-      value: this.endpoint.attrEndpointArn,
+      value: `arn:aws:sagemaker:${this.region}:${this.account}:endpoint/${this.endpoint.endpointName}`,
       description: 'SageMaker endpoint ARN',
       exportName: `${props.environmentName}-SageMakerEndpointArn`,
-    });
-
-    new cdk.CfnOutput(this, 'NotificationTopicArn', {
-      value: this.notificationTopic.topicArn,
-      description: 'SNS topic for inference notifications',
-      exportName: `${props.environmentName}-InferenceNotificationTopic`,
     });
 
     new cdk.CfnOutput(this, 'ModelImageUri', {

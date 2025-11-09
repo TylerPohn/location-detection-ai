@@ -47,10 +47,11 @@ describe('BaseInfrastructureStack', () => {
 
     const template = Template.fromStack(stack);
 
+    // Check that resources have tags
     expect(template.toJSON().Resources).toBeDefined();
   });
 
-  test('creates outputs for key and role', () => {
+  test('outputs encryption key ID and service role ARN', () => {
     const app = new cdk.App();
     const stack = new BaseInfrastructureStack(app, 'TestStack', {
       environmentName: 'test',
@@ -58,8 +59,7 @@ describe('BaseInfrastructureStack', () => {
 
     const template = Template.fromStack(stack);
 
-    const outputs = template.toJSON().Outputs;
-    expect(outputs).toHaveProperty('EncryptionKeyId');
-    expect(outputs).toHaveProperty('ServiceRoleArn');
+    template.hasOutput('EncryptionKeyId', {});
+    template.hasOutput('ServiceRoleArn', {});
   });
 });

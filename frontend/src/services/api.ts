@@ -1,6 +1,16 @@
 // API Service Layer
 import { env } from '@/config/env';
+import { getIdToken } from './firebase';
 import type { UploadRequest, UploadResponse, DetectionResult, ApiError } from '@/types/api';
+
+// TODO: Enable when backend is integrated
+// import type {
+//   UserProfile,
+//   Invite,
+//   CreateInviteRequest,
+//   VerifyInviteRequest,
+//   VerifyInviteResponse,
+// } from '@/types/auth';
 
 class ApiService {
   private baseUrl: string;
@@ -9,21 +19,49 @@ class ApiService {
     this.baseUrl = env.apiBaseUrl;
   }
 
-  async requestUploadUrl(request: UploadRequest): Promise<UploadResponse> {
-    const response = await fetch(`${this.baseUrl}/upload`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
+  private async getAuthHeaders(): Promise<HeadersInit> {
+    const token = await getIdToken();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
 
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return headers;
+  }
+
+  private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      const error: ApiError = await response.json();
-      throw new Error(error.message || 'Failed to request upload URL');
+      let error: ApiError;
+      try {
+        error = await response.json();
+      } catch {
+        error = {
+          message: 'An error occurred',
+          statusCode: response.status,
+        };
+      }
+
+      const apiError: any = new Error(error.message || 'Request failed');
+      apiError.statusCode = error.statusCode || response.status;
+      apiError.code = error.code;
+      throw apiError;
     }
 
     return response.json();
+  }
+
+  async requestUploadUrl(request: UploadRequest): Promise<UploadResponse> {
+    const headers = await this.getAuthHeaders();
+    const response = await fetch(`${this.baseUrl}/upload`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(request),
+    });
+
+    return this.handleResponse<UploadResponse>(response);
   }
 
   async uploadToS3(url: string, file: File, onProgress?: (progress: number) => void): Promise<void> {
@@ -56,15 +94,92 @@ class ApiService {
   }
 
   async getJobStatus(jobId: string): Promise<DetectionResult> {
-    const response = await fetch(`${this.baseUrl}/status/${jobId}`);
+    const headers = await this.getAuthHeaders();
+    const response = await fetch(`${this.baseUrl}/status/${jobId}`, {
+      headers,
+    });
 
-    if (!response.ok) {
-      const error: ApiError = await response.json();
-      throw new Error(error.message || 'Failed to fetch job status');
-    }
-
-    return response.json();
+    return this.handleResponse<DetectionResult>(response);
   }
+
+  // TODO: Enable when backend is integrated
+  // User Management
+  // async getUserProfile(): Promise<UserProfile> {
+  //   const headers = await this.getAuthHeaders();
+  //   const response = await fetch(`${this.baseUrl}/users/me`, {
+  //     headers,
+  //   });
+  //
+  //   return this.handleResponse<UserProfile>(response);
+  // }
+
+  // async getAllUsers(): Promise<UserProfile[]> {
+  //   const headers = await this.getAuthHeaders();
+  //   const response = await fetch(`${this.baseUrl}/users`, {
+  //     headers,
+  //   });
+  //
+  //   return this.handleResponse<UserProfile[]>(response);
+  // }
+
+  // Invite Management
+  // async createInvite(request: CreateInviteRequest): Promise<Invite> {
+  //   const headers = await this.getAuthHeaders();
+  //   const response = await fetch(`${this.baseUrl}/invites`, {
+  //     method: 'POST',
+  //     headers,
+  //     body: JSON.stringify(request),
+  //   });
+  //
+  //   return this.handleResponse<Invite>(response);
+  // }
+
+  // async getInvites(): Promise<Invite[]> {
+  //   const headers = await this.getAuthHeaders();
+  //   const response = await fetch(`${this.baseUrl}/invites`, {
+  //     headers,
+  //   });
+  //
+  //   return this.handleResponse<Invite[]>(response);
+  // }
+
+  // async verifyInvite(request: VerifyInviteRequest): Promise<VerifyInviteResponse> {
+  //   const response = await fetch(`${this.baseUrl}/invites/verify`, {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify(request),
+  //   });
+  //
+  //   return this.handleResponse<VerifyInviteResponse>(response);
+  // }
+
+  // async revokeInvite(inviteId: string): Promise<void> {
+  //   const headers = await this.getAuthHeaders();
+  //   const response = await fetch(`${this.baseUrl}/invites/${inviteId}`, {
+  //     method: 'DELETE',
+  //     headers,
+  //   });
+  //
+  //   if (!response.ok) {
+  //     throw new Error('Failed to revoke invite');
+  //   }
+  // }
 }
 
 export const apiService = new ApiService();
+
+// Export individual functions for convenience
+export const requestUploadUrl = (request: UploadRequest) => apiService.requestUploadUrl(request);
+export const uploadToS3 = (url: string, file: File, onProgress?: (progress: number) => void) =>
+  apiService.uploadToS3(url, file, onProgress);
+export const getJobStatus = (jobId: string) => apiService.getJobStatus(jobId);
+
+// TODO: Enable when backend is integrated
+// export const getUserProfile = () => apiService.getUserProfile();
+// export const getAllUsers = () => apiService.getAllUsers();
+// export const createInvite = (request: CreateInviteRequest) => apiService.createInvite(request);
+// export const getInvites = () => apiService.getInvites();
+// export const verifyInvite = (request: VerifyInviteRequest) => apiService.verifyInvite(request);
+// export const revokeInvite = (inviteId: string) => apiService.revokeInvite(inviteId);

@@ -1,14 +1,74 @@
-# Welcome to your CDK TypeScript project
+# Infrastructure
 
-This is a blank project for CDK development with TypeScript.
+AWS CDK infrastructure for Location Detection AI.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Prerequisites
 
-## Useful commands
+- Node.js 18+
+- AWS CLI configured
+- AWS account with CDK bootstrap completed
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+## Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Copy environment template
+cp .env.example .env
+
+# Edit .env with your AWS account details
+nano .env
+```
+
+## Deployment
+
+```bash
+# Deploy to development
+export AWS_ACCOUNT_ID=placeholder-account
+export AWS_REGION=us-east-1
+export ENVIRONMENT=development
+./scripts/deploy.sh
+
+# Deploy to production
+ENVIRONMENT=production ./scripts/deploy.sh
+```
+
+## Development
+
+```bash
+# Build TypeScript
+npm run build
+
+# Run tests
+npm test
+
+# Lint code
+npm run lint
+
+# Format code
+npm run format
+
+# Synthesize CloudFormation
+npm run synth
+
+# View differences
+npm run diff
+```
+
+## Stack Structure
+
+- `BaseInfrastructureStack` - KMS keys, IAM roles, networking foundation
+
+## Testing Infrastructure
+
+```bash
+# Run unit tests
+npm test
+
+# Test synthesis
+npm run synth
+
+# Dry-run deployment
+npm run diff
+```

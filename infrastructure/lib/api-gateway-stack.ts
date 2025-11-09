@@ -9,6 +9,8 @@ export interface ApiGatewayStackProps extends cdk.StackProps {
   environmentName: string;
   uploadLambda: lambda.IFunction;
   statusLambda: lambda.IFunction;
+  inviteLambda: lambda.IFunction;
+  userLambda: lambda.IFunction;
 }
 
 export class ApiGatewayStack extends cdk.Stack {
@@ -26,6 +28,7 @@ export class ApiGatewayStack extends cdk.Stack {
         allowMethods: [
           apigateway.CorsHttpMethod.GET,
           apigateway.CorsHttpMethod.POST,
+          apigateway.CorsHttpMethod.DELETE,
           apigateway.CorsHttpMethod.OPTIONS,
         ],
         allowHeaders: ['Content-Type', 'Authorization'],
@@ -57,6 +60,54 @@ export class ApiGatewayStack extends cdk.Stack {
       integration: statusIntegration,
     });
 
+    // Invite management endpoint integration (admin only)
+    const inviteIntegration = new apigatewayIntegrations.HttpLambdaIntegration(
+      'InviteIntegration',
+      props.inviteLambda
+    );
+
+    this.httpApi.addRoutes({
+      path: '/admin/invites',
+      methods: [apigateway.HttpMethod.GET, apigateway.HttpMethod.POST],
+      integration: inviteIntegration,
+    });
+
+    this.httpApi.addRoutes({
+      path: '/admin/invites/{inviteId}',
+      methods: [apigateway.HttpMethod.DELETE],
+      integration: inviteIntegration,
+    });
+
+    // User management endpoint integration
+    const userIntegration = new apigatewayIntegrations.HttpLambdaIntegration(
+      'UserIntegration',
+      props.userLambda
+    );
+
+    this.httpApi.addRoutes({
+      path: '/users/me',
+      methods: [apigateway.HttpMethod.GET],
+      integration: userIntegration,
+    });
+
+    this.httpApi.addRoutes({
+      path: '/users/me/jobs',
+      methods: [apigateway.HttpMethod.GET],
+      integration: userIntegration,
+    });
+
+    this.httpApi.addRoutes({
+      path: '/users/verify-invite',
+      methods: [apigateway.HttpMethod.POST],
+      integration: userIntegration,
+    });
+
+    this.httpApi.addRoutes({
+      path: '/users/complete-registration',
+      methods: [apigateway.HttpMethod.POST],
+      integration: userIntegration,
+    });
+
     // Access logs
     const logGroup = new logs.LogGroup(this, 'ApiLogs', {
       logGroupName: `/aws/apigateway/location-detection-${props.environmentName}`,
@@ -77,6 +128,16 @@ export class ApiGatewayStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'UploadUrl', {
       value: `${this.httpApi.apiEndpoint}/upload`,
       description: 'Blueprint upload endpoint',
+    });
+
+    new cdk.CfnOutput(this, 'AdminInvitesUrl', {
+      value: `${this.httpApi.apiEndpoint}/admin/invites`,
+      description: 'Admin invites management endpoint',
+    });
+
+    new cdk.CfnOutput(this, 'UserMeUrl', {
+      value: `${this.httpApi.apiEndpoint}/users/me`,
+      description: 'User profile endpoint',
     });
 
     // Tags

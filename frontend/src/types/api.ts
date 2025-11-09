@@ -1,5 +1,3 @@
-// API type definitions
-
 export interface UploadRequest {
   fileName: string;
   fileType: string;
@@ -9,32 +7,36 @@ export interface UploadRequest {
 export interface UploadResponse {
   jobId: string;
   uploadUrl: string;
+  expiresIn: number;
 }
 
 export interface Room {
   id: string;
-  label: string;
-  confidence: number;
-  boundingBox: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
+  lines: Line[];
+  polygon: Point[];
+  area: number;
+  perimeter: number;
+  name_hint?: string;
 }
+
+export interface Line {
+  start: Point;
+  end: Point;
+}
+
+export type Point = [number, number];
 
 export interface DetectionResult {
   jobId: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
-  imageUrl?: string;
+  progress?: number;
+  roomCount?: number;
   rooms?: Room[];
   error?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface ApiError {
   message: string;
   code?: string;
-  details?: unknown;
+  statusCode?: number;
 }

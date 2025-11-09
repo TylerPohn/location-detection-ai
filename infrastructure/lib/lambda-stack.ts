@@ -2,6 +2,8 @@ import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
@@ -9,31 +11,43 @@ export interface LambdaStackProps extends cdk.StackProps {
   environmentName: string;
   blueprintBucket: s3.IBucket;
   resultsBucket: s3.IBucket;
-  serviceRole: iam.IRole;
-  endpointName?: string;
-  endpointArn?: string;
+  modelImageUri: string;
+  usersTable: dynamodb.ITable;
+  invitesTable: dynamodb.ITable;
+  jobsTable: dynamodb.ITable;
+  rateLimitsTable: dynamodb.ITable;
 }
 
 export class LambdaStack extends cdk.Stack {
   public readonly uploadHandler: lambda.Function;
   public readonly statusHandler: lambda.Function;
   public readonly inferenceTrigger: lambda.Function;
+  public readonly mlInferenceHandler: lambda.DockerImageFunction;
+  public readonly inviteHandler: lambda.Function;
+  public readonly userHandler: lambda.Function;
 
   constructor(scope: Construct, id: string, props: LambdaStackProps) {
     super(scope, id, props);
 
-    // Upload handler Lambda
+    // Firebase configuration (should be set in environment or SSM Parameter Store)
+    const firebaseEnv = {
+      FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
+      FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL || '',
+      FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY || '',
+    };
+
+    // Upload handler Lambda (creates its own role to avoid circular dependencies)
     this.uploadHandler = new lambda.Function(this, 'UploadHandler', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset(
         path.join(__dirname, '../../backend/src/lambdas/upload-handler')
       ),
-      role: props.serviceRole,
       environment: {
         BLUEPRINT_BUCKET_NAME: props.blueprintBucket.bucketName,
         RESULTS_BUCKET_NAME: props.resultsBucket.bucketName,
-        AWS_REGION: this.region,
+        JOBS_TABLE_NAME: props.jobsTable.tableName,
+        ...firebaseEnv,
       },
       timeout: cdk.Duration.seconds(30),
       memorySize: 512,
@@ -42,19 +56,23 @@ export class LambdaStack extends cdk.Stack {
     // Grant S3 permissions
     props.blueprintBucket.grantWrite(this.uploadHandler);
     props.resultsBucket.grantRead(this.uploadHandler);
+    // Grant DynamoDB permissions
+    props.jobsTable.grantWriteData(this.uploadHandler);
+    props.usersTable.grantReadData(this.uploadHandler);
+    props.rateLimitsTable.grantReadWriteData(this.uploadHandler);
 
-    // Status handler Lambda
+    // Status handler Lambda (creates its own role to avoid circular dependencies)
     this.statusHandler = new lambda.Function(this, 'StatusHandler', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset(
         path.join(__dirname, '../../backend/src/lambdas/status-handler')
       ),
-      role: props.serviceRole,
       environment: {
         BLUEPRINT_BUCKET_NAME: props.blueprintBucket.bucketName,
         RESULTS_BUCKET_NAME: props.resultsBucket.bucketName,
-        AWS_REGION: this.region,
+        JOBS_TABLE_NAME: props.jobsTable.tableName,
+        ...firebaseEnv,
       },
       timeout: cdk.Duration.seconds(15),
       memorySize: 256,
@@ -63,36 +81,100 @@ export class LambdaStack extends cdk.Stack {
     // Grant S3 permissions
     props.blueprintBucket.grantRead(this.statusHandler);
     props.resultsBucket.grantRead(this.statusHandler);
+    // Grant DynamoDB permissions
+    props.jobsTable.grantReadData(this.statusHandler);
 
-    // Inference trigger Lambda
+    // ML Inference Lambda (Docker container with OpenCV detector)
+    // Reference the ECR repository
+    const repository = ecr.Repository.fromRepositoryName(
+      this,
+      'DetectorRepository',
+      'location-detector'
+    );
+
+    this.mlInferenceHandler = new lambda.DockerImageFunction(this, 'MLInferenceHandler', {
+      code: lambda.DockerImageCode.fromEcr(repository, {
+        tagOrDigest: 'sha256:f016c3740ef281e5f0575c95eb9d54c1f656adbf5fa337f96f7db7710d032d8b', // x86_64 image
+        cmd: ['lambda_handler.handler'], // Handler specification for AWS Lambda base image
+      }),
+      environment: {
+        RESULTS_BUCKET_NAME: props.resultsBucket.bucketName,
+      },
+      timeout: cdk.Duration.minutes(5),
+      memorySize: 3008, // 3GB for OpenCV processing
+    });
+
+    // Grant S3 permissions for ML inference
+    props.blueprintBucket.grantRead(this.mlInferenceHandler);
+    props.resultsBucket.grantWrite(this.mlInferenceHandler);
+
+    // Inference trigger Lambda (triggers ML inference on S3 upload)
     this.inferenceTrigger = new lambda.Function(this, 'InferenceTrigger', {
       runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
+      handler: 'dist/index.handler',
       code: lambda.Code.fromAsset(
         path.join(__dirname, '../../backend/src/lambdas/inference-trigger')
       ),
-      role: props.serviceRole,
       environment: {
-        SAGEMAKER_ENDPOINT_NAME: props.endpointName || 'location-detector-dev',
+        ML_LAMBDA_ARN: this.mlInferenceHandler.functionArn,
         RESULTS_BUCKET_NAME: props.resultsBucket.bucketName,
-        AWS_REGION: this.region,
       },
       timeout: cdk.Duration.seconds(60),
       memorySize: 256,
     });
 
-    // Grant SageMaker invoke permissions
-    this.inferenceTrigger.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ['sagemaker:InvokeEndpointAsync'],
-        resources: props.endpointArn
-          ? [props.endpointArn]
-          : [`arn:aws:sagemaker:${this.region}:${this.account}:endpoint/*`],
-      })
-    );
+    // Grant permission to invoke ML Lambda
+    this.mlInferenceHandler.grantInvoke(this.inferenceTrigger);
 
     // Grant S3 read permissions
     props.blueprintBucket.grantRead(this.inferenceTrigger);
+
+    // Invite handler Lambda (admin-only invite management)
+    this.inviteHandler = new lambda.Function(this, 'InviteHandler', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset(
+        path.join(__dirname, '../../backend/src/lambdas/invite-handler')
+      ),
+      environment: {
+        INVITES_TABLE_NAME: props.invitesTable.tableName,
+        ...firebaseEnv,
+      },
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+    });
+
+    // Grant DynamoDB permissions
+    props.invitesTable.grantReadWriteData(this.inviteHandler);
+
+    // User handler Lambda (user management and registration)
+    this.userHandler = new lambda.Function(this, 'UserHandler', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset(
+        path.join(__dirname, '../../backend/src/lambdas/user-handler')
+      ),
+      environment: {
+        USERS_TABLE_NAME: props.usersTable.tableName,
+        INVITES_TABLE_NAME: props.invitesTable.tableName,
+        JOBS_TABLE_NAME: props.jobsTable.tableName,
+        ...firebaseEnv,
+      },
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+    });
+
+    // Grant DynamoDB permissions
+    props.usersTable.grantReadWriteData(this.userHandler);
+    props.invitesTable.grantReadWriteData(this.userHandler);
+    props.jobsTable.grantReadData(this.userHandler);
+
+    // NOTE: S3 event notification must be configured manually after deployment
+    // to avoid circular dependency between Base/Storage/Lambda stacks.
+    // Run this after deployment:
+    // aws s3api put-bucket-notification-configuration \
+    //   --bucket location-detection-blueprints-development \
+    //   --notification-configuration file://s3-notification-config.json
 
     // Outputs
     new cdk.CfnOutput(this, 'UploadHandlerArn', {
@@ -106,6 +188,21 @@ export class LambdaStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'InferenceTriggerArn', {
       value: this.inferenceTrigger.functionArn,
       description: 'Inference trigger Lambda function ARN',
+    });
+
+    new cdk.CfnOutput(this, 'MLInferenceHandlerArn', {
+      value: this.mlInferenceHandler.functionArn,
+      description: 'ML inference Lambda function ARN (Docker container)',
+    });
+
+    new cdk.CfnOutput(this, 'InviteHandlerArn', {
+      value: this.inviteHandler.functionArn,
+      description: 'Invite handler Lambda function ARN',
+    });
+
+    new cdk.CfnOutput(this, 'UserHandlerArn', {
+      value: this.userHandler.functionArn,
+      description: 'User handler Lambda function ARN',
     });
 
     cdk.Tags.of(this).add('Project', 'LocationDetectionAI');

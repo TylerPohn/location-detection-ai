@@ -30,7 +30,7 @@ export function UploadPage() {
   };
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <Box sx={{ mb: 4 }}>
         <Button
           startIcon={<ArrowBack />}

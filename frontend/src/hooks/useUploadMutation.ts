@@ -2,6 +2,8 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '@/services/api';
+import { createJob } from '@/services/firestore';
+import { useAuth } from '@/contexts/AuthContext';
 import type { UploadRequest } from '@/types/api';
 
 interface UploadProgress {
@@ -15,9 +17,14 @@ interface UseUploadMutationOptions {
 
 export function useUploadMutation({ onProgress }: UseUploadMutationOptions = {}) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (file: File) => {
+      if (!user) {
+        throw new Error('User must be authenticated to upload files');
+      }
+
       // Stage 1: Request upload URL
       onProgress?.({ stage: 'requesting', progress: 0 });
 
@@ -28,6 +35,15 @@ export function useUploadMutation({ onProgress }: UseUploadMutationOptions = {})
       };
 
       const { jobId, uploadUrl } = await apiService.requestUploadUrl(uploadRequest);
+
+      // Create Firestore job entry
+      try {
+        await createJob(jobId, user.uid, file.name);
+        console.log('✅ Job entry created in Firestore:', jobId);
+      } catch (error) {
+        console.error('⚠️ Failed to create Firestore job entry:', error);
+        // Continue with upload even if Firestore fails
+      }
 
       // Stage 2: Upload to S3
       onProgress?.({ stage: 'uploading', progress: 0 });

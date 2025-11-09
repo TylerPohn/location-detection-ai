@@ -3,6 +3,7 @@ import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { BaseInfrastructureStack } from '../lib/base-infrastructure-stack';
 import { StorageStack } from '../lib/storage-stack';
+import { DynamoDBStack } from '../lib/dynamodb-stack';
 import { LambdaStack } from '../lib/lambda-stack';
 import { ApiGatewayStack } from '../lib/api-gateway-stack';
 import { getEnvironmentConfig } from '../lib/config';
@@ -10,42 +11,62 @@ import { getEnvironmentConfig } from '../lib/config';
 const app = new cdk.App();
 const config = getEnvironmentConfig();
 
-const env = {
-  account: config.account,
-  region: config.region,
+// Get model image URI from context (passed during deploy)
+const modelImageUri = app.node.tryGetContext('modelImageUri') ||
+  `${config.account}.dkr.ecr.${config.region}.amazonaws.com/location-detector:latest`;
+
+const stackProps = {
+  env: {
+    account: config.account,
+    region: config.region,
+  },
+  environmentName: config.environment,
 };
 
-// Base infrastructure
+// 1. Base infrastructure (KMS, IAM roles)
 const baseStack = new BaseInfrastructureStack(app, `${config.stackPrefix}-Base`, {
-  env,
-  environmentName: config.environment,
+  ...stackProps,
+  description: 'Base infrastructure for Location Detection AI',
 });
 
-// Storage
+// 2. Storage (S3 buckets with own encryption key)
 const storageStack = new StorageStack(app, `${config.stackPrefix}-Storage`, {
-  env,
-  environmentName: config.environment,
-  encryptionKey: baseStack.encryptionKey,
+  ...stackProps,
+  description: 'S3 storage buckets for blueprints and results',
 });
-storageStack.addDependency(baseStack);
+// Storage creates its own encryption key to avoid circular dependencies
 
-// Lambda functions
+// 3. DynamoDB tables for user management and job tracking
+const dynamoDBStack = new DynamoDBStack(app, `${config.stackPrefix}-DynamoDB`, {
+  ...stackProps,
+  description: 'DynamoDB tables for users, invites, and jobs',
+});
+
+// 4. Lambda functions (including ML inference container)
 const lambdaStack = new LambdaStack(app, `${config.stackPrefix}-Lambda`, {
-  env,
-  environmentName: config.environment,
+  ...stackProps,
   blueprintBucket: storageStack.blueprintBucket,
   resultsBucket: storageStack.resultsBucket,
-  serviceRole: baseStack.serviceRole,
+  modelImageUri: modelImageUri,
+  usersTable: dynamoDBStack.usersTable,
+  invitesTable: dynamoDBStack.invitesTable,
+  jobsTable: dynamoDBStack.jobsTable,
+  rateLimitsTable: dynamoDBStack.rateLimitsTable,
+  description: 'Lambda functions for API handlers and ML inference',
 });
-lambdaStack.addDependency(storageStack);
+// Lambda functions create their own execution roles to avoid circular dependencies
 
-// API Gateway
+// S3 event trigger is configured in LambdaStack to avoid circular dependency
+
+// 5. API Gateway
 const apiStack = new ApiGatewayStack(app, `${config.stackPrefix}-Api`, {
-  env,
-  environmentName: config.environment,
+  ...stackProps,
   uploadLambda: lambdaStack.uploadHandler,
   statusLambda: lambdaStack.statusHandler,
+  inviteLambda: lambdaStack.inviteHandler,
+  userLambda: lambdaStack.userHandler,
+  description: 'HTTP API Gateway for Location Detection AI',
 });
-apiStack.addDependency(lambdaStack);
+// Note: No explicit dependency needed - CDK will infer from Lambda references
 
 app.synth();
