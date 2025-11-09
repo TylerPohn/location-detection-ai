@@ -1,7 +1,8 @@
 // Global notification system using MUI Snackbar
 
 import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import { Snackbar, Alert, AlertColor } from '@mui/material';
+import { Snackbar, Alert } from '@mui/material';
+import type { AlertColor } from '@mui/material/Alert';
 
 interface Notification {
   message: string;

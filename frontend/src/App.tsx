@@ -1,50 +1,70 @@
 // Main Application Component
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { queryClient } from '@/config/queryClient';
+import { NotificationProvider } from '@/context/NotificationContext';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { AppLayout } from '@/components/Layout/AppLayout';
+import { ProtectedRoute } from '@/components/Auth/ProtectedRoute';
+import { AdminRoute } from '@/components/Auth/AdminRoute';
 import { HomePage } from '@/pages/HomePage';
 import { UploadPage } from '@/pages/UploadPage';
 import { ResultsPage } from '@/pages/ResultsPage';
+import { LoginPage } from '@/pages/LoginPage';
+import { RoleSelectionPage } from '@/pages/RoleSelectionPage';
+import { AdminDashboard } from '@/pages/AdminDashboard';
 import { ROUTES } from '@/types/routes';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
 
 function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <BrowserRouter>
-            <Routes>
-              <Route path={ROUTES.HOME} element={<HomePage />} />
-              <Route path={ROUTES.UPLOAD} element={<UploadPage />} />
-              <Route path={ROUTES.RESULTS} element={<ResultsPage />} />
-            </Routes>
-          </BrowserRouter>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <NotificationProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppLayout>
+              <Routes>
+                <Route path={ROUTES.HOME} element={<HomePage />} />
+                <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+                <Route
+                  path={ROUTES.ROLE_SELECTION}
+                  element={
+                    <ProtectedRoute>
+                      <RoleSelectionPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={ROUTES.UPLOAD}
+                  element={
+                    <ProtectedRoute>
+                      <UploadPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={ROUTES.RESULTS}
+                  element={
+                    <ProtectedRoute>
+                      <ResultsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={ROUTES.ADMIN}
+                  element={
+                    <AdminRoute>
+                      <AdminDashboard />
+                    </AdminRoute>
+                  }
+                />
+              </Routes>
+            </AppLayout>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </AuthProvider>
+        </BrowserRouter>
+      </NotificationProvider>
+    </QueryClientProvider>
   );
 }
 

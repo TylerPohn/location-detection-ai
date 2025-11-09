@@ -1,0 +1,56 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <title>Office Floor Plan</title>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f5f5f5"/>
+
+  <!-- Outer walls -->
+  <rect x="50" y="50" width="700" height="500" fill="white" stroke="#000" stroke-width="4"/>
+
+  <!-- Conference Room -->
+  <rect x="50" y="50" width="300" height="200" fill="#e3f2fd" stroke="#000" stroke-width="2"/>
+  <text x="200" y="150" text-anchor="middle" font-size="16" font-family="Arial">Conference Room</text>
+
+  <!-- Office 1 -->
+  <rect x="350" y="50" width="200" height="200" fill="#fff3e0" stroke="#000" stroke-width="2"/>
+  <text x="450" y="150" text-anchor="middle" font-size="16" font-family="Arial">Office 1</text>
+
+  <!-- Office 2 -->
+  <rect x="550" y="50" width="200" height="200" fill="#fff3e0" stroke="#000" stroke-width="2"/>
+  <text x="650" y="150" text-anchor="middle" font-size="16" font-family="Arial">Office 2</text>
+
+  <!-- Kitchen/Break Room -->
+  <rect x="50" y="250" width="200" height="150" fill="#e8f5e9" stroke="#000" stroke-width="2"/>
+  <text x="150" y="325" text-anchor="middle" font-size="16" font-family="Arial">Kitchen</text>
+
+  <!-- Open Workspace -->
+  <rect x="250" y="250" width="500" height="150" fill="#fce4ec" stroke="#000" stroke-width="2"/>
+  <text x="500" y="325" text-anchor="middle" font-size="16" font-family="Arial">Open Workspace</text>
+
+  <!-- Restroom -->
+  <rect x="50" y="400" width="150" height="150" fill="#f3e5f5" stroke="#000" stroke-width="2"/>
+  <text x="125" y="475" text-anchor="middle" font-size="16" font-family="Arial">Restroom</text>
+
+  <!-- Storage -->
+  <rect x="200" y="400" width="150" height="150" fill="#efebe9" stroke="#000" stroke-width="2"/>
+  <text x="275" y="475" text-anchor="middle" font-size="16" font-family="Arial">Storage</text>
+
+  <!-- Server Room -->
+  <rect x="350" y="400" width="200" height="150" fill="#ffebee" stroke="#000" stroke-width="2"/>
+  <text x="450" y="475" text-anchor="middle" font-size="16" font-family="Arial">Server Room</text>
+
+  <!-- Meeting Room -->
+  <rect x="550" y="400" width="200" height="150" fill="#e1f5fe" stroke="#000" stroke-width="2"/>
+  <text x="650" y="475" text-anchor="middle" font-size="16" font-family="Arial">Meeting Room</text>
+
+  <!-- Doors -->
+  <line x1="200" y1="50" x2="200" y2="80" stroke="#666" stroke-width="3"/>
+  <line x1="450" y1="50" x2="450" y2="80" stroke="#666" stroke-width="3"/>
+  <line x1="650" y1="50" x2="650" y2="80" stroke="#666" stroke-width="3"/>
+  <line x1="150" y1="250" x2="150" y2="280" stroke="#666" stroke-width="3"/>
+  <line x1="500" y1="250" x2="500" y2="280" stroke="#666" stroke-width="3"/>
+  <line x1="125" y1="400" x2="125" y2="430" stroke="#666" stroke-width="3"/>
+  <line x1="275" y1="400" x2="275" y2="430" stroke="#666" stroke-width="3"/>
+  <line x1="450" y1="400" x2="450" y2="430" stroke="#666" stroke-width="3"/>
+  <line x1="650" y1="400" x2="650" y2="430" stroke="#666" stroke-width="3"/>
+</svg>
