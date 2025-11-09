@@ -1,35 +1,12 @@
-FROM python:3.9-slim
-
-# Install system dependencies for OpenCV
-RUN apt-get update && apt-get install -y \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set working directory
-WORKDIR /opt/ml/code
-
-# Copy requirements
-COPY requirements.txt .
+FROM public.ecr.aws/lambda/python:3.9
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt ${LAMBDA_TASK_ROOT}/
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt
 
-# Copy detector module
-COPY detector/ ./detector/
+# Copy detector module and handler
+COPY detector/ ${LAMBDA_TASK_ROOT}/detector/
+COPY lambda_handler.py ${LAMBDA_TASK_ROOT}/lambda_handler.py
 
-# Copy inference script
-COPY inference.py .
-
-# Set environment variables for SageMaker
-ENV SAGEMAKER_PROGRAM=inference.py
-ENV SAGEMAKER_SUBMIT_DIRECTORY=/opt/ml/code
-
-# SageMaker serves on port 8080
-EXPOSE 8080
-
-# Entry point (SageMaker will override this)
-ENTRYPOINT ["python", "inference.py"]
+# Note: Handler is configured in Lambda function configuration, not in Dockerfile
+# AWS Lambda base images have a special ENTRYPOINT that requires handler as argument
