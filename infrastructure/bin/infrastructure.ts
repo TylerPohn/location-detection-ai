@@ -56,7 +56,11 @@ const lambdaStack = new LambdaStack(app, `${config.stackPrefix}-Lambda`, {
 });
 // Lambda functions create their own execution roles to avoid circular dependencies
 
-// S3 event trigger is configured in LambdaStack to avoid circular dependency
+// NOTE: S3 event notifications must be configured manually after deployment
+// to avoid circular dependency between Storage and Lambda stacks.
+// Run these commands after stack deployment:
+// 1. Blueprint upload trigger (already configured)
+// 2. Result upload trigger: aws s3api put-bucket-notification-configuration --bucket location-detection-results-development --notification-configuration file://s3-result-notification-config.json
 
 // 5. API Gateway
 const apiStack = new ApiGatewayStack(app, `${config.stackPrefix}-Api`, {

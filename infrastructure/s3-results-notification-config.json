@@ -1,0 +1,23 @@
+{
+  "LambdaFunctionConfigurations": [
+    {
+      "Id": "ResultUploadTrigger",
+      "LambdaFunctionArn": "arn:aws:lambda:us-east-2:971422717446:function:LocDetAI-Dev-Lambda-ResultHandler8CE72AD4-I36OGiDEKsaB",
+      "Events": ["s3:ObjectCreated:*"],
+      "Filter": {
+        "Key": {
+          "FilterRules": [
+            {
+              "Name": "prefix",
+              "Value": "results/"
+            },
+            {
+              "Name": "suffix",
+              "Value": ".json"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -100,4 +100,16 @@ export class StorageStack extends cdk.Stack {
       { prefix: 'blueprints/' }
     );
   }
+
+  /**
+   * Add S3 event trigger for result uploads.
+   * This method is called after the Lambda function is created.
+   */
+  public addResultUploadTrigger(triggerFunction: lambda.IFunction): void {
+    this.resultsBucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED,
+      new s3Notifications.LambdaDestination(triggerFunction),
+      { prefix: 'results/', suffix: '.json' }
+    );
+  }
 }

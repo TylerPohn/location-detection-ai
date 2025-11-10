@@ -97,6 +97,12 @@ export class ApiGatewayStack extends cdk.Stack {
     });
 
     this.httpApi.addRoutes({
+      path: '/admin/jobs',
+      methods: [apigateway.HttpMethod.GET],
+      integration: userIntegration,
+    });
+
+    this.httpApi.addRoutes({
       path: '/users/verify-invite',
       methods: [apigateway.HttpMethod.POST],
       integration: userIntegration,

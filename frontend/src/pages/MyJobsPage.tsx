@@ -15,33 +15,56 @@ import WorkIcon from '@mui/icons-material/Work';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import { getUserJobs } from '@/services/api';
+import { getAllJobs } from '@/services/firestore';
+import { getJobStatus } from '@/services/api';
 import { JobsTable, type JobData } from '@/components/Jobs/JobsTable';
 import { JobsTableSkeleton } from '@/components/Jobs/JobsTableSkeleton';
 import { useJobStatistics } from '@/hooks/useJobStatistics';
-import type { DetectionResult } from '@/types/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function MyJobsPage() {
   const [jobs, setJobs] = useState<JobData[]>([]);
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
+  const { user } = useAuth();
 
   const statistics = useJobStatistics(jobs);
 
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const jobsData = await getUserJobs();
+      // Get all jobs from Firestore
+      const jobsData = await getAllJobs();
 
-      // Convert DetectionResult to JobData format
-      const formattedJobs: JobData[] = jobsData.map((job: DetectionResult) => ({
-        jobId: job.jobId,
-        fileName: job.jobId, // Backend may need to return fileName
-        status: job.status,
-        uploadedAt: new Date().toISOString(), // Backend may need to return uploadedAt
-      }));
+      // Filter by current user's ID
+      const userJobs = user?.uid
+        ? jobsData.filter((job) => job.userId === user.uid)
+        : [];
 
-      setJobs(formattedJobs);
+      // Enrich jobs with real status from backend
+      const enrichedJobs = await Promise.all(
+        userJobs.map(async (job) => {
+          let realStatus = job.status;
+
+          // Try to get real status from backend
+          try {
+            const backendStatus = await getJobStatus(job.jobId);
+            realStatus = backendStatus.status;
+          } catch (error) {
+            // If backend fails, keep Firestore status
+            console.log(`Could not fetch status for job ${job.jobId}:`, error);
+          }
+
+          return {
+            jobId: job.jobId,
+            fileName: job.fileName,
+            status: realStatus,
+            uploadedAt: job.uploadedAt,
+          } as JobData;
+        })
+      );
+
+      setJobs(enrichedJobs);
     } catch (error) {
       console.error('Failed to fetch jobs:', error);
     } finally {

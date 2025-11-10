@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
@@ -21,6 +22,7 @@ export interface LambdaStackProps extends cdk.StackProps {
 export class LambdaStack extends cdk.Stack {
   public readonly uploadHandler: lambda.Function;
   public readonly statusHandler: lambda.Function;
+  public readonly resultHandler: lambda.Function;
   public readonly inferenceTrigger: lambda.Function;
   public readonly mlInferenceHandler: lambda.DockerImageFunction;
   public readonly inviteHandler: lambda.Function;
@@ -83,6 +85,27 @@ export class LambdaStack extends cdk.Stack {
     props.resultsBucket.grantRead(this.statusHandler);
     // Grant DynamoDB permissions
     props.jobsTable.grantReadData(this.statusHandler);
+
+    // Result handler Lambda (updates Firestore when results are uploaded to S3)
+    this.resultHandler = new lambda.Function(this, 'ResultHandler', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset(
+        path.join(__dirname, '../../backend/src/lambdas/result-handler')
+      ),
+      environment: {
+        RESULTS_BUCKET_NAME: props.resultsBucket.bucketName,
+        ...firebaseEnv,
+      },
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 256,
+    });
+
+    // Grant S3 read permissions
+    props.resultsBucket.grantRead(this.resultHandler);
+
+    // NOTE: S3 event notification for result handler must be configured in the Storage stack
+    // to avoid circular dependency (Storage stack will use this.resultHandler.functionArn)
 
     // ML Inference Lambda (Docker container with YOLOv8 detector)
     // Reference the ECR repository for YOLO model
@@ -207,6 +230,11 @@ export class LambdaStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'UserHandlerArn', {
       value: this.userHandler.functionArn,
       description: 'User handler Lambda function ARN',
+    });
+
+    new cdk.CfnOutput(this, 'ResultHandlerArn', {
+      value: this.resultHandler.functionArn,
+      description: 'Result handler Lambda function ARN',
     });
 
     cdk.Tags.of(this).add('Project', 'LocationDetectionAI');

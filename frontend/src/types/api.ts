@@ -31,6 +31,9 @@ export type Point = [number, number];
 
 export interface DetectionResult {
   jobId: string;
+  userId: string;
+  fileName: string;
+  uploadedAt: number;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   progress?: number;
   roomCount?: number;

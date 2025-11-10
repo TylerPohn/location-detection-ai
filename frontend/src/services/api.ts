@@ -112,6 +112,16 @@ class ApiService {
     return data.jobs;
   }
 
+  async getAllJobs(): Promise<DetectionResult[]> {
+    const headers = await this.getAuthHeaders();
+    const response = await fetch(`${this.baseUrl}/admin/jobs`, {
+      headers,
+    });
+
+    const data = await this.handleResponse<{ jobs: DetectionResult[] }>(response);
+    return data.jobs;
+  }
+
   // TODO: Enable when backend is integrated
   // User Management
   // async getUserProfile(): Promise<UserProfile> {
@@ -186,6 +196,7 @@ export const uploadToS3 = (url: string, file: File, onProgress?: (progress: numb
   apiService.uploadToS3(url, file, onProgress);
 export const getJobStatus = (jobId: string) => apiService.getJobStatus(jobId);
 export const getUserJobs = () => apiService.getUserJobs();
+export const getAllJobs = () => apiService.getAllJobs();
 
 // TODO: Enable when backend is integrated
 // export const getUserProfile = () => apiService.getUserProfile();

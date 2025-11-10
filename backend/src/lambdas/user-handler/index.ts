@@ -5,6 +5,7 @@ import {
   GetCommand,
   PutCommand,
   QueryCommand,
+  ScanCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { requireAuth } from './auth';
@@ -64,18 +65,12 @@ async function getCurrentUser(userId: string): Promise<User | null> {
 }
 
 /**
- * Get user's job history
+ * Get all jobs (loosened permissions - filter in UI)
  */
-async function getUserJobs(userId: string) {
+async function getAllJobs() {
   const result = await docClient.send(
-    new QueryCommand({
+    new ScanCommand({
       TableName: JOBS_TABLE,
-      IndexName: 'UserIdIndex',
-      KeyConditionExpression: 'userId = :userId',
-      ExpressionAttributeValues: {
-        ':userId': userId,
-      },
-      ScanIndexForward: false, // Most recent first
     })
   );
 
@@ -272,11 +267,11 @@ export const handler = async (
       };
     }
 
-    // GET /users/me/jobs - Get user's jobs
+    // GET /users/me/jobs - Get all jobs (filter in UI)
     if (method === 'GET' && path === '/users/me/jobs') {
       try {
-        console.log('Fetching jobs for user:', user.userId);
-        const jobs = await getUserJobs(user.userId);
+        console.log('Fetching all jobs');
+        const jobs = await getAllJobs();
         console.log('Found jobs:', jobs.length);
 
         return {
@@ -285,7 +280,7 @@ export const handler = async (
           body: JSON.stringify({ jobs }),
         };
       } catch (error) {
-        console.error('Error fetching user jobs:', error);
+        console.error('Error fetching jobs:', error);
         throw error;
       }
     }
