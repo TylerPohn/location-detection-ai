@@ -26,7 +26,6 @@ import {
   alpha,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import PeopleIcon from '@mui/icons-material/People';
 import WorkIcon from '@mui/icons-material/Work';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -36,6 +35,9 @@ import { getAllUsers, getAllJobs } from '@/services/firestore';
 import { getJobStatus } from '@/services/api';
 import type { UserProfile, Job } from '@/types/auth';
 import { ROUTES } from '@/types/routes';
+import { JobsTable, type JobData } from '@/components/Jobs/JobsTable';
+import { JobsTableSkeleton } from '@/components/Jobs/JobsTableSkeleton';
+import { useJobStatistics } from '@/hooks/useJobStatistics';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -67,10 +69,12 @@ interface JobWithEmail extends Job {
 export function AdminDashboard() {
   const [tabValue, setTabValue] = useState(0);
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [jobs, setJobs] = useState<JobWithEmail[]>([]);
+  const [jobs, setJobs] = useState<JobData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+
+  const statistics = useJobStatistics(jobs);
 
   const fetchData = async () => {
     setLoading(true);
@@ -100,10 +104,12 @@ export function AdminDashboard() {
           }
 
           return {
-            ...job,
+            jobId: job.jobId,
+            fileName: job.fileName,
+            status: realStatus,
+            uploadedAt: job.uploadedAt,
             userEmail: user?.email || 'Unknown',
-            realStatus,
-          };
+          } as JobData;
         })
       );
 
@@ -123,33 +129,20 @@ export function AdminDashboard() {
     setTabValue(newValue);
   };
 
-  const handleViewResults = (jobId: string) => {
-    navigate(ROUTES.RESULTS.replace(':jobId', jobId));
-  };
-
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleString();
   };
 
-  // Calculate statistics
-  const completedJobs = jobs.filter(j => (j.realStatus || j.status) === 'completed').length;
-  const failedJobs = jobs.filter(j => (j.realStatus || j.status) === 'failed').length;
-  const processingJobs = jobs.filter(j => (j.realStatus || j.status) === 'processing').length;
+  // Calculate user statistics
   const adminUsers = users.filter(u => u.role === 'admin').length;
   const studentUsers = users.filter(u => u.role === 'student').length;
 
-  // Filter data based on search
+  // Filter users based on search
   const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (user.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
-  );
-
-  const filteredJobs = jobs.filter(job =>
-    job.jobId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    job.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (job.userEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
   );
 
   return (
@@ -244,10 +237,10 @@ export function AdminDashboard() {
                   </Typography>
                 </Box>
                 <Typography variant="h3" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' } }}>
-                  {jobs.length}
+                  {statistics.total}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-                  {processingJobs} processing
+                  {statistics.processing} processing
                 </Typography>
               </CardContent>
             </Card>
@@ -272,10 +265,10 @@ export function AdminDashboard() {
                   </Typography>
                 </Box>
                 <Typography variant="h3" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' } }}>
-                  {completedJobs}
+                  {statistics.completed}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-                  {jobs.length > 0 ? Math.round((completedJobs / jobs.length) * 100) : 0}% success rate
+                  {statistics.successRate}% success rate
                 </Typography>
               </CardContent>
             </Card>
@@ -300,10 +293,10 @@ export function AdminDashboard() {
                   </Typography>
                 </Box>
                 <Typography variant="h3" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' } }}>
-                  {failedJobs}
+                  {statistics.failed}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-                  {jobs.length > 0 ? Math.round((failedJobs / jobs.length) * 100) : 0}% failure rate
+                  {statistics.failureRate}% failure rate
                 </Typography>
               </CardContent>
             </Card>
@@ -446,123 +439,9 @@ export function AdminDashboard() {
           {/* Jobs Tab */}
           <TabPanel value={tabValue} index={1}>
             {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                <CircularProgress />
-              </Box>
+              <JobsTableSkeleton rows={10} showUserEmail={true} />
             ) : (
-              <>
-                {/* Search Bar */}
-                <Box sx={{ mb: 3 }}>
-                  <TextField
-                    fullWidth
-                    placeholder="Search jobs by ID, filename, or user email..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                      }
-                    }}
-                  />
-                </Box>
-
-                <TableContainer>
-                  <Table sx={{
-                    '& .MuiTableHead-root': {
-                      bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
-                    }
-                  }}>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600 }}>Job ID</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>User Email</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>File Name</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Uploaded Date</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredJobs.map((job) => (
-                        <TableRow
-                          key={job.jobId}
-                          sx={{
-                            '&:hover': {
-                              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
-                            },
-                            transition: 'background-color 0.2s',
-                          }}
-                        >
-                          <TableCell
-                            sx={{
-                              fontFamily: 'monospace',
-                              fontSize: '0.875rem',
-                              color: 'text.secondary',
-                            }}
-                          >
-                            {job.jobId.substring(0, 8)}...
-                          </TableCell>
-                          <TableCell sx={{ fontWeight: 500 }}>
-                            {job.userEmail}
-                          </TableCell>
-                          <TableCell>{job.fileName}</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={job.realStatus || job.status}
-                              color={
-                                (job.realStatus || job.status) === 'completed'
-                                  ? 'success'
-                                  : (job.realStatus || job.status) === 'failed'
-                                  ? 'error'
-                                  : (job.realStatus || job.status) === 'processing'
-                                  ? 'warning'
-                                  : 'default'
-                              }
-                              size="small"
-                              sx={{
-                                fontWeight: 600,
-                                textTransform: 'uppercase',
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell sx={{ color: 'text.secondary' }}>
-                            {formatDate(job.uploadedAt)}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              startIcon={<VisibilityIcon />}
-                              onClick={() => handleViewResults(job.jobId)}
-                              sx={{
-                                textTransform: 'none',
-                                fontWeight: 500,
-                              }}
-                            >
-                              View
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                {filteredJobs.length === 0 && (
-                  <Box sx={{ py: 4, textAlign: 'center' }}>
-                    <Typography variant="body1" color="text.secondary">
-                      No jobs found matching "{searchQuery}"
-                    </Typography>
-                  </Box>
-                )}
-              </>
+              <JobsTable jobs={jobs} loading={loading} showUserEmail={true} />
             )}
           </TabPanel>
       </Paper>

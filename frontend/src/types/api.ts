@@ -12,11 +12,14 @@ export interface UploadResponse {
 
 export interface Room {
   id: string;
-  lines: Line[];
-  polygon: Point[];
-  area: number;
-  perimeter: number;
+  bounding_box: [number, number, number, number]; // [x1, y1, x2, y2]
   name_hint?: string;
+  confidence?: number;
+  // Legacy polygon fields (optional, not used by YOLO)
+  lines?: Line[];
+  polygon?: Point[];
+  area?: number;
+  perimeter?: number;
 }
 
 export interface Line {

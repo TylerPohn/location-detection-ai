@@ -9,7 +9,7 @@ import {
   Paper,
 } from '@mui/material';
 import type { Room } from '../../types/api';
-import { generateRoomColor, formatArea } from '../../utils/canvas';
+import { generateRoomColor, formatArea, calculateBoundingBoxArea } from '../../utils/canvas';
 
 interface RoomListProps {
   rooms: Room[];
@@ -30,6 +30,11 @@ export function RoomList({ rooms, selectedRoomId, onRoomSelect }: RoomListProps)
         {rooms.map((room, index) => {
           const color = generateRoomColor(index);
           const isSelected = selectedRoomId === room.id;
+
+          // Calculate area from bounding box if available, otherwise use room.area
+          const area = room.bounding_box
+            ? calculateBoundingBoxArea(room.bounding_box)
+            : room.area || 0;
 
           return (
             <ListItemButton
@@ -56,7 +61,7 @@ export function RoomList({ rooms, selectedRoomId, onRoomSelect }: RoomListProps)
 
               <ListItemText
                 primary={room.id}
-                secondary={formatArea(room.area)}
+                secondary={formatArea(area)}
               />
 
               {room.name_hint && (

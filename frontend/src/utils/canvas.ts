@@ -66,6 +66,30 @@ export function calculateRoomCenter(polygon: Point[]): Point {
 }
 
 /**
+ * Calculate center point of a bounding box
+ */
+export function calculateBoundingBoxCenter(bbox: [number, number, number, number]): Point {
+  const [x1, y1, x2, y2] = bbox;
+  return [(x1 + x2) / 2, (y1 + y2) / 2];
+}
+
+/**
+ * Calculate area of a bounding box
+ */
+export function calculateBoundingBoxArea(bbox: [number, number, number, number]): number {
+  const [x1, y1, x2, y2] = bbox;
+  return (x2 - x1) * (y2 - y1);
+}
+
+/**
+ * Calculate perimeter of a bounding box
+ */
+export function calculateBoundingBoxPerimeter(bbox: [number, number, number, number]): number {
+  const [x1, y1, x2, y2] = bbox;
+  return 2 * ((x2 - x1) + (y2 - y1));
+}
+
+/**
  * Format area for display
  */
 export function formatArea(area: number): string {

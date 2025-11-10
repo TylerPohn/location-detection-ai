@@ -5,4 +5,5 @@ export const ROUTES = {
   LOGIN: '/login',
   ROLE_SELECTION: '/role-selection',
   ADMIN: '/admin',
+  MY_JOBS: '/my-jobs',
 } as const;

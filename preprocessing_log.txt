@@ -1,0 +1,94 @@
+============================================================
+CubiCasa5k Dataset Preprocessing
+============================================================
+
+Collecting samples...
+Found 4724 samples
+
+Dataset split:
+  Training:   3306 samples (70.0%)
+  Validation: 708 samples (15.0%)
+  Test:       710 samples (15.0%)
+
+============================================================
+Converting to YOLO format...
+============================================================
+Processing train:   0%|          | 0/3306 [00:00<?, ?it/s]Processing train:   1%|          | 33/3306 [00:00<00:09, 327.78it/s]Processing train:   2%|▏         | 67/3306 [00:00<00:09, 331.99it/s]Processing train:   3%|▎         | 104/3306 [00:00<00:09, 346.36it/s]Processing train:   4%|▍         | 139/3306 [00:00<00:09, 330.05it/s]Processing train:   5%|▌         | 173/3306 [00:00<00:09, 327.23it/s]Processing train:   6%|▌         | 206/3306 [00:00<00:09, 314.51it/s]Processing train:   7%|▋         | 246/3306 [00:00<00:09, 336.23it/s]Processing train:   8%|▊         | 280/3306 [00:00<00:09, 327.44it/s]Processing train:   9%|▉         | 313/3306 [00:00<00:09, 325.59it/s]Processing train:  10%|█         | 346/3306 [00:01<00:09, 318.43it/s]Processing train:  11%|█▏        | 380/3306 [00:01<00:09, 323.30it/s]Processing train:  12%|█▏        | 413/3306 [00:01<00:09, 319.50it/s]Processing train:  14%|█▎        | 450/3306 [00:01<00:08, 328.06it/s]Processing train:  15%|█▍        | 487/3306 [00:01<00:08, 338.83it/s]Processing train:  16%|█▌        | 525/3306 [00:01<00:07, 349.52it/s]Processing train:  17%|█▋        | 561/3306 [00:01<00:07, 352.36it/s]Processing train:  18%|█▊        | 597/3306 [00:01<00:07, 349.20it/s]Processing train:  19%|█▉        | 632/3306 [00:01<00:07, 348.91it/s]Processing train:  20%|██        | 667/3306 [00:01<00:07, 346.43it/s]Processing train:  21%|██        | 702/3306 [00:02<00:07, 347.25it/s]Processing train:  22%|██▏       | 737/3306 [00:02<00:07, 343.01it/s]Processing train:  23%|██▎       | 772/3306 [00:02<00:07, 339.66it/s]Processing train:  24%|██▍       | 809/3306 [00:02<00:07, 346.61it/s]Processing train:  26%|██▌       | 844/3306 [00:02<00:07, 318.65it/s]Processing train:  27%|██▋       | 881/3306 [00:02<00:07, 331.13it/s]Processing train:  28%|██▊       | 915/3306 [00:02<00:07, 331.44it/s]Processing train:  29%|██▉       | 957/3306 [00:02<00:06, 354.41it/s]Processing train:  30%|███       | 993/3306 [00:02<00:07, 323.74it/s]Processing train:  31%|███       | 1027/3306 [00:03<00:07, 322.92it/s]Processing train:  32%|███▏      | 1064/3306 [00:03<00:06, 334.06it/s]Processing train:  33%|███▎      | 1100/3306 [00:03<00:06, 340.93it/s]Processing train:  34%|███▍      | 1135/3306 [00:03<00:06, 342.31it/s]Processing train:  35%|███▌      | 1172/3306 [00:03<00:06, 347.91it/s]Processing train:  37%|███▋      | 1207/3306 [00:03<00:06, 346.89it/s]Processing train:  38%|███▊      | 1244/3306 [00:03<00:05, 352.21it/s]Processing train:  39%|███▊      | 1280/3306 [00:03<00:05, 348.46it/s]Processing train:  40%|███▉      | 1315/3306 [00:03<00:05, 345.58it/s]Processing train:  41%|████      | 1350/3306 [00:04<00:05, 327.08it/s]Processing train:  42%|████▏     | 1383/3306 [00:04<00:06, 316.79it/s]Processing train:  43%|████▎     | 1421/3306 [00:04<00:05, 333.46it/s]Processing train:  44%|████▍     | 1461/3306 [00:04<00:05, 350.65it/s]Processing train:  45%|████▌     | 1497/3306 [00:04<00:05, 339.85it/s]Processing train:  46%|████▋     | 1533/3306 [00:04<00:05, 345.30it/s]Processing train:  47%|████▋     | 1569/3306 [00:04<00:04, 349.02it/s]Processing train:  49%|████▊     | 1605/3306 [00:04<00:04, 350.94it/s]Processing train:  50%|████▉     | 1643/3306 [00:04<00:04, 358.35it/s]Processing train:  51%|█████     | 1679/3306 [00:04<00:04, 348.28it/s]Processing train:  52%|█████▏    | 1714/3306 [00:05<00:04, 326.65it/s]Processing train:  53%|█████▎    | 1751/3306 [00:05<00:04, 337.60it/s]Processing train:  54%|█████▍    | 1788/3306 [00:05<00:04, 346.41it/s]Processing train:  55%|█████▌    | 1824/3306 [00:05<00:04, 348.90it/s]Processing train:  56%|█████▋    | 1865/3306 [00:05<00:03, 361.26it/s]Processing train:  58%|█████▊    | 1902/3306 [00:05<00:03, 353.76it/s]Processing train:  59%|█████▊    | 1939/3306 [00:05<00:03, 356.24it/s]Processing train:  60%|█████▉    | 1976/3306 [00:05<00:03, 355.06it/s]Processing train:  61%|██████    | 2013/3306 [00:05<00:03, 358.17it/s]Processing train:  62%|██████▏   | 2050/3306 [00:06<00:03, 360.69it/s]Processing train:  63%|██████▎   | 2090/3306 [00:06<00:03, 371.88it/s]Processing train:  64%|██████▍   | 2128/3306 [00:06<00:03, 371.26it/s]Processing train:  66%|██████▌   | 2169/3306 [00:06<00:02, 380.96it/s]Processing train:  67%|██████▋   | 2208/3306 [00:06<00:03, 362.32it/s]Processing train:  68%|██████▊   | 2248/3306 [00:06<00:02, 371.59it/s]Processing train:  69%|██████▉   | 2286/3306 [00:06<00:02, 370.84it/s]Processing train:  70%|███████   | 2325/3306 [00:06<00:02, 376.03it/s]Processing train:  72%|███████▏  | 2364/3306 [00:06<00:02, 379.66it/s]Processing train:  73%|███████▎  | 2403/3306 [00:06<00:02, 367.52it/s]Processing train:  74%|███████▍  | 2440/3306 [00:07<00:02, 330.39it/s]Processing train:  75%|███████▍  | 2478/3306 [00:07<00:02, 343.05it/s]Processing train:  76%|███████▌  | 2516/3306 [00:07<00:02, 351.75it/s]Processing train:  77%|███████▋  | 2553/3306 [00:07<00:02, 355.33it/s]Processing train:  78%|███████▊  | 2589/3306 [00:07<00:02, 353.29it/s]Processing train:  79%|███████▉  | 2625/3306 [00:07<00:01, 350.83it/s]Processing train:  81%|████████  | 2663/3306 [00:07<00:01, 358.45it/s]Processing train:  82%|████████▏ | 2702/3306 [00:07<00:01, 367.12it/s]Processing train:  83%|████████▎ | 2739/3306 [00:07<00:01, 361.90it/s]Processing train:  84%|████████▍ | 2776/3306 [00:08<00:01, 361.10it/s]Processing train:  85%|████████▌ | 2813/3306 [00:08<00:01, 358.26it/s]Processing train:  86%|████████▌ | 2849/3306 [00:08<00:01, 356.65it/s]Processing train:  87%|████████▋ | 2886/3306 [00:08<00:01, 358.42it/s]Processing train:  88%|████████▊ | 2922/3306 [00:08<00:01, 355.37it/s]/opt/homebrew/lib/python3.13/site-packages/PIL/Image.py:3432: DecompressionBombWarning: Image size (90344064 pixels) exceeds limit of 89478485 pixels, could be decompression bomb DOS attack.
+  warnings.warn(
+Processing train:  90%|████████▉ | 2961/3306 [00:08<00:00, 364.42it/s]Processing train:  91%|█████████ | 2998/3306 [00:08<00:00, 358.25it/s]Processing train:  92%|█████████▏| 3036/3306 [00:08<00:00, 362.59it/s]Processing train:  93%|█████████▎| 3073/3306 [00:08<00:00, 363.65it/s]Processing train:  94%|█████████▍| 3111/3306 [00:08<00:00, 365.92it/s]Processing train:  95%|█████████▌| 3148/3306 [00:09<00:00, 361.36it/s]Processing train:  96%|█████████▋| 3185/3306 [00:09<00:00, 356.27it/s]Processing train:  97%|█████████▋| 3222/3306 [00:09<00:00, 358.43it/s]Processing train:  99%|█████████▊| 3258/3306 [00:09<00:00, 345.63it/s]Processing train: 100%|█████████▉| 3298/3306 [00:09<00:00, 360.26it/s]Processing train: 100%|██████████| 3306/3306 [00:09<00:00, 348.41it/s]
+Warning: No rooms found in 6683
+Warning: No rooms found in 8426
+Warning: No rooms found in 4520
+Warning: No rooms found in 6443
+Warning: No rooms found in 6269
+Warning: No rooms found in 9451
+Processing val:   0%|          | 0/708 [00:00<?, ?it/s]Processing val:   5%|▌         | 37/708 [00:00<00:01, 368.29it/s]Processing val:  10%|█         | 74/708 [00:00<00:01, 363.94it/s]Processing val:  16%|█▌        | 112/708 [00:00<00:01, 369.88it/s]Processing val:  21%|██        | 149/708 [00:00<00:01, 355.07it/s]Processing val:  26%|██▋       | 187/708 [00:00<00:01, 359.70it/s]Processing val:  32%|███▏      | 224/708 [00:00<00:01, 355.95it/s]Processing val:  37%|███▋      | 262/708 [00:00<00:01, 362.80it/s]Processing val:  42%|████▏     | 299/708 [00:00<00:01, 363.56it/s]Processing val:  47%|████▋     | 336/708 [00:00<00:01, 349.50it/s]Processing val:  53%|█████▎    | 372/708 [00:01<00:00, 350.16it/s]Processing val:  58%|█████▊    | 408/708 [00:01<00:00, 346.78it/s]Processing val:  63%|██████▎   | 443/708 [00:01<00:00, 345.05it/s]Processing val:  68%|██████▊   | 478/708 [00:01<00:00, 318.76it/s]Processing val:  73%|███████▎  | 517/708 [00:01<00:00, 336.60it/s]Processing val:  78%|███████▊  | 554/708 [00:01<00:00, 342.21it/s]Processing val:  83%|████████▎ | 589/708 [00:01<00:00, 332.29it/s]Processing val:  88%|████████▊ | 623/708 [00:01<00:00, 332.56it/s]Processing val:  93%|█████████▎| 659/708 [00:01<00:00, 338.41it/s]Processing val:  98%|█████████▊| 696/708 [00:02<00:00, 346.62it/s]Processing val: 100%|██████████| 708/708 [00:02<00:00, 347.42it/s]
+Warning: No rooms found in 7705
+Processing test:   0%|          | 0/710 [00:00<?, ?it/s]Processing test:   5%|▌         | 36/710 [00:00<00:01, 349.35it/s]Processing test:  11%|█         | 76/710 [00:00<00:01, 375.76it/s]Processing test:  16%|█▌        | 114/710 [00:00<00:01, 369.13it/s]Processing test:  21%|██▏       | 152/710 [00:00<00:01, 370.62it/s]Processing test:  27%|██▋       | 190/710 [00:00<00:01, 369.97it/s]Processing test:  32%|███▏      | 228/710 [00:00<00:01, 367.90it/s]Processing test:  37%|███▋      | 265/710 [00:00<00:01, 361.64it/s]Processing test:  43%|████▎     | 302/710 [00:00<00:01, 339.36it/s]Processing test:  47%|████▋     | 337/710 [00:00<00:01, 334.72it/s]Processing test:  53%|█████▎    | 374/710 [00:01<00:00, 343.34it/s]Processing test:  58%|█████▊    | 414/710 [00:01<00:00, 358.61it/s]Processing test:  64%|██████▎   | 451/710 [00:01<00:00, 347.81it/s]Processing test:  69%|██████▉   | 489/710 [00:01<00:00, 355.75it/s]Processing test:  74%|███████▍  | 525/710 [00:01<00:00, 352.67it/s]Processing test:  79%|███████▉  | 561/710 [00:01<00:00, 354.70it/s]Processing test:  84%|████████▍ | 598/710 [00:01<00:00, 358.87it/s]Processing test:  89%|████████▉ | 634/710 [00:01<00:00, 348.04it/s]Processing test:  94%|█████████▍| 669/710 [00:01<00:00, 346.44it/s]Processing test:  99%|█████████▉| 704/710 [00:02<00:00, 322.16it/s]Processing test: 100%|██████████| 710/710 [00:02<00:00, 348.81it/s]
+Warning: No rooms found in 1657
+Created dataset.yaml at data/processed/dataset.yaml
+
+============================================================
+Dataset Statistics
+============================================================
+
+TRAIN:
+  Images: 3300
+  Labels: 3300
+  Total annotations: 40585
+  Avg annotations/image: 12.3
+  Class distribution:
+    0: Bedroom      - 5603 ( 13.8%)
+    1: LivingRoom   - 2619 (  6.5%)
+    2: Kitchen      - 2568 (  6.3%)
+    3: Bathroom     - 4714 ( 11.6%)
+    4: Dining       -  604 (  1.5%)
+    5: Entry        - 3902 (  9.6%)
+    6: Closet       - 2948 (  7.3%)
+    7: Utility      -  896 (  2.2%)
+    8: Outdoor      - 4569 ( 11.3%)
+    9: Other        - 12162 ( 30.0%)
+
+VAL:
+  Images: 707
+  Labels: 707
+  Total annotations: 8971
+  Avg annotations/image: 12.7
+  Class distribution:
+    0: Bedroom      - 1178 ( 13.1%)
+    1: LivingRoom   -  556 (  6.2%)
+    2: Kitchen      -  553 (  6.2%)
+    3: Bathroom     - 1047 ( 11.7%)
+    4: Dining       -  152 (  1.7%)
+    5: Entry        -  862 (  9.6%)
+    6: Closet       -  614 (  6.8%)
+    7: Utility      -  204 (  2.3%)
+    8: Outdoor      -  998 ( 11.1%)
+    9: Other        - 2807 ( 31.3%)
+
+TEST:
+  Images: 709
+  Labels: 709
+  Total annotations: 8649
+  Avg annotations/image: 12.2
+  Class distribution:
+    0: Bedroom      - 1167 ( 13.5%)
+    1: LivingRoom   -  568 (  6.6%)
+    2: Kitchen      -  525 (  6.1%)
+    3: Bathroom     - 1029 ( 11.9%)
+    4: Dining       -  142 (  1.6%)
+    5: Entry        -  822 (  9.5%)
+    6: Closet       -  631 (  7.3%)
+    7: Utility      -  183 (  2.1%)
+    8: Outdoor      -  965 ( 11.2%)
+    9: Other        - 2617 ( 30.3%)
+
+============================================================
+Processing Summary
+============================================================
+Total samples processed: 4724
+  Successful: 4716 (99.8%)
+  Failed:     8 (0.2%)
+
+Dataset saved to: /Users/tyler/Desktop/Gauntlet/location-detection-ai/data/processed
+dataset.yaml created at: data/processed/dataset.yaml

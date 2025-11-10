@@ -14,6 +14,7 @@ import { ResultsPage } from '@/pages/ResultsPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RoleSelectionPage } from '@/pages/RoleSelectionPage';
 import { AdminDashboard } from '@/pages/AdminDashboard';
+import { MyJobsPage } from '@/pages/MyJobsPage';
 import { ROUTES } from '@/types/routes';
 
 function App() {
@@ -47,6 +48,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ResultsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={ROUTES.MY_JOBS}
+                  element={
+                    <ProtectedRoute>
+                      <MyJobsPage />
                     </ProtectedRoute>
                   }
                 />

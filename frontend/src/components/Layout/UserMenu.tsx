@@ -15,6 +15,7 @@ import {
 import LogoutIcon from '@mui/icons-material/Logout';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import SchoolIcon from '@mui/icons-material/School';
+import WorkIcon from '@mui/icons-material/Work';
 import { useAuth } from '@/contexts/AuthContext';
 import { ROUTES } from '@/types/routes';
 
@@ -104,6 +105,12 @@ export function UserMenu() {
           </Typography>
         </Box>
         <Divider />
+        <MenuItem onClick={() => { handleClose(); navigate(ROUTES.MY_JOBS); }}>
+          <ListItemIcon>
+            <WorkIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>My Jobs</ListItemText>
+        </MenuItem>
         {isAdmin && (
           <>
             <MenuItem onClick={() => { handleClose(); navigate(ROUTES.ADMIN); }}>
@@ -112,9 +119,9 @@ export function UserMenu() {
               </ListItemIcon>
               <ListItemText>Admin Dashboard</ListItemText>
             </MenuItem>
-            <Divider />
           </>
         )}
+        <Divider />
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" />

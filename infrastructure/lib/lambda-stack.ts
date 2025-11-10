@@ -84,24 +84,28 @@ export class LambdaStack extends cdk.Stack {
     // Grant DynamoDB permissions
     props.jobsTable.grantReadData(this.statusHandler);
 
-    // ML Inference Lambda (Docker container with OpenCV detector)
-    // Reference the ECR repository
-    const repository = ecr.Repository.fromRepositoryName(
+    // ML Inference Lambda (Docker container with YOLOv8 detector)
+    // Reference the ECR repository for YOLO model
+    const yoloRepository = ecr.Repository.fromRepositoryName(
       this,
-      'DetectorRepository',
-      'location-detector'
+      'YoloDetectorRepository',
+      'room-detection-yolo'
     );
 
     this.mlInferenceHandler = new lambda.DockerImageFunction(this, 'MLInferenceHandler', {
-      code: lambda.DockerImageCode.fromEcr(repository, {
-        tagOrDigest: 'sha256:f016c3740ef281e5f0575c95eb9d54c1f656adbf5fa337f96f7db7710d032d8b', // x86_64 image
-        cmd: ['lambda_handler.handler'], // Handler specification for AWS Lambda base image
+      code: lambda.DockerImageCode.fromEcr(yoloRepository, {
+        tagOrDigest: 'latest', // Use latest YOLO model
       }),
+      architecture: lambda.Architecture.X86_64, // YOLO Lambda is built for x86_64
       environment: {
         RESULTS_BUCKET_NAME: props.resultsBucket.bucketName,
+        YOLO_MODEL_PATH: '/var/task/models/best.pt',
+        YOLO_CONF_THRESHOLD: '0.25',
+        YOLO_IOU_THRESHOLD: '0.45',
+        MPLCONFIGDIR: '/tmp/matplotlib',
       },
-      timeout: cdk.Duration.minutes(5),
-      memorySize: 3008, // 3GB for OpenCV processing
+      timeout: cdk.Duration.seconds(60), // 60s for YOLO cold start
+      memorySize: 3008, // 3GB for YOLO processing
     });
 
     // Grant S3 permissions for ML inference

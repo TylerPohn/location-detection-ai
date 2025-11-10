@@ -9,7 +9,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Home as HomeIcon, Login as LoginIcon, CloudUpload } from '@mui/icons-material';
+import { Home as HomeIcon, Login as LoginIcon, CloudUpload, Work as WorkIcon } from '@mui/icons-material';
 import { ROUTES } from '@/types/routes';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from './UserMenu';
@@ -66,30 +66,57 @@ export function AppBar() {
 
         <Box sx={{ display: 'flex', gap: { xs: 1, sm: 1.5, md: 2 }, alignItems: 'center' }}>
           {isAuthenticated && (
-            <Button
-              color="inherit"
-              startIcon={<CloudUpload />}
-              onClick={() => navigate(ROUTES.UPLOAD)}
-              sx={{
-                textTransform: 'none',
-                fontWeight: 600,
-                fontSize: { xs: '0.875rem', md: '1rem' },
-                px: { xs: 2, md: 3 },
-                py: { xs: 1, md: 1.25 },
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.common.white, 0.1),
-                backdropFilter: 'blur(10px)',
-                boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.2)}`,
-                '&:hover': {
-                  bgcolor: alpha(theme.palette.common.white, 0.2),
-                  transform: 'translateY(-2px)',
-                  boxShadow: `0 6px 16px ${alpha(theme.palette.common.black, 0.3)}`,
-                },
-                transition: 'all 0.2s',
-              }}
-            >
-              Upload
-            </Button>
+            <>
+              <Button
+                color="inherit"
+                startIcon={<WorkIcon />}
+                onClick={() => navigate(ROUTES.MY_JOBS)}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.875rem', md: '1rem' },
+                  px: { xs: 2, md: 3 },
+                  py: { xs: 1, md: 1.25 },
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.common.white, 0.1),
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.2)}`,
+                  '&:hover': {
+                    bgcolor: alpha(theme.palette.common.white, 0.2),
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 6px 16px ${alpha(theme.palette.common.black, 0.3)}`,
+                  },
+                  transition: 'all 0.2s',
+                  display: { xs: 'none', sm: 'flex' },
+                }}
+              >
+                My Jobs
+              </Button>
+              <Button
+                color="inherit"
+                startIcon={<CloudUpload />}
+                onClick={() => navigate(ROUTES.UPLOAD)}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.875rem', md: '1rem' },
+                  px: { xs: 2, md: 3 },
+                  py: { xs: 1, md: 1.25 },
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.common.white, 0.1),
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.2)}`,
+                  '&:hover': {
+                    bgcolor: alpha(theme.palette.common.white, 0.2),
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 6px 16px ${alpha(theme.palette.common.black, 0.3)}`,
+                  },
+                  transition: 'all 0.2s',
+                }}
+              >
+                Upload
+              </Button>
+            </>
           )}
           {isAuthenticated ? (
             <UserMenu />

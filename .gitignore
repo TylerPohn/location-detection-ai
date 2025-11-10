@@ -84,3 +84,14 @@ hive-mind-prompt-*.txt
 scripts/deploy-with-creds.sh
 scripts/deploy-backend.sh
 scripts/.env.deploy
+
+data
+
+# ML Model files (large binary files, should be in S3/artifact storage)
+*.pt
+*.pth
+*.onnx
+*.pb
+*.tar.gz
+models
+backend/src/sagemaker/models/

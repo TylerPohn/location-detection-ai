@@ -1,0 +1,29 @@
+FROM public.ecr.aws/lambda/python:3.11
+
+# Install system dependencies for OpenCV, PyTorch, and build tools
+RUN yum install -y \
+    mesa-libGL \
+    libgomp \
+    gcc \
+    gcc-c++ \
+    && yum clean all
+
+# Copy requirements first for better caching
+COPY requirements-yolo.txt ${LAMBDA_TASK_ROOT}/
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements-yolo.txt
+
+# Copy YOLO model weights (assumes model is trained and available)
+# This should be done during build or deployment
+COPY models/best.pt ${LAMBDA_TASK_ROOT}/models/best.pt
+
+# Copy detector module and handler
+COPY detector/ ${LAMBDA_TASK_ROOT}/detector/
+COPY lambda_handler_yolo.py ${LAMBDA_TASK_ROOT}/lambda_handler.py
+
+# Set environment variables for YOLO
+ENV YOLO_MODEL_PATH=/var/task/models/best.pt
+ENV YOLO_CONF_THRESHOLD=0.25
+ENV YOLO_IOU_THRESHOLD=0.45
+
+# Set CMD for Lambda entrypoint (required by AWS Lambda base image)
+CMD ["lambda_handler.handler"]

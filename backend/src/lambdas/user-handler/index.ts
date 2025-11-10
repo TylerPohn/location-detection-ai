@@ -7,8 +7,8 @@ import {
   QueryCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { requireAuth } from '../../middleware/auth';
-import { initializeFirebaseAdmin, setCustomClaims } from '../../utils/firebaseAdmin';
+import { requireAuth } from './auth';
+import { initializeFirebaseAdmin, setCustomClaims } from './firebaseAdmin';
 
 // Initialize Firebase Admin SDK
 initializeFirebaseAdmin();
@@ -18,6 +18,16 @@ const docClient = DynamoDBDocumentClient.from(ddbClient);
 const USERS_TABLE = process.env.USERS_TABLE_NAME!;
 const INVITES_TABLE = process.env.INVITES_TABLE_NAME!;
 const JOBS_TABLE = process.env.JOBS_TABLE_NAME!;
+
+// Validate required environment variables
+if (!USERS_TABLE || !INVITES_TABLE || !JOBS_TABLE) {
+  console.error('Missing required environment variables:', {
+    USERS_TABLE,
+    INVITES_TABLE,
+    JOBS_TABLE,
+  });
+  throw new Error('Missing required DynamoDB table configuration');
+}
 
 interface User {
   userId: string;
@@ -264,13 +274,20 @@ export const handler = async (
 
     // GET /users/me/jobs - Get user's jobs
     if (method === 'GET' && path === '/users/me/jobs') {
-      const jobs = await getUserJobs(user.userId);
+      try {
+        console.log('Fetching jobs for user:', user.userId);
+        const jobs = await getUserJobs(user.userId);
+        console.log('Found jobs:', jobs.length);
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ jobs }),
-      };
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ jobs }),
+        };
+      } catch (error) {
+        console.error('Error fetching user jobs:', error);
+        throw error;
+      }
     }
 
     // POST /users/complete-registration - Complete registration
