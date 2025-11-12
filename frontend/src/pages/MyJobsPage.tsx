@@ -64,6 +64,13 @@ export function MyJobsPage() {
         })
       );
 
+      // Sort jobs by uploadedAt in descending order (newest first)
+      enrichedJobs.sort((a, b) => {
+        const timeA = a.uploadedAt?.toDate ? a.uploadedAt.toDate().getTime() : new Date(a.uploadedAt).getTime();
+        const timeB = b.uploadedAt?.toDate ? b.uploadedAt.toDate().getTime() : new Date(b.uploadedAt).getTime();
+        return timeB - timeA;
+      });
+
       setJobs(enrichedJobs);
     } catch (error) {
       console.error('Failed to fetch jobs:', error);

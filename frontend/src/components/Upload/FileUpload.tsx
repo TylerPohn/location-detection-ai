@@ -185,11 +185,15 @@ export function FileUpload({ onFileSelect, isUploading, progress, error }: FileU
               sx={{
                 fontWeight: 700,
                 mb: 1,
-                background: dragActive
-                  ? `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
-                  : theme.palette.text.primary,
-                WebkitBackgroundClip: dragActive ? 'text' : 'unset',
-                WebkitTextFillColor: dragActive ? 'transparent' : 'unset',
+                ...(dragActive
+                  ? {
+                      background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }
+                  : {
+                      color: theme.palette.text.primary,
+                    }),
                 transition: 'all 0.3s',
               }}
             >

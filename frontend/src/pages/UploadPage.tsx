@@ -47,7 +47,7 @@ export function UploadPage() {
         </Typography>
       </Box>
 
-      {!selectedFile && !isUploading && (
+      {!selectedFile && stage === 'idle' && (
         <FileUpload
           onFileSelect={handleFileSelect}
           isUploading={isUploading}
@@ -56,7 +56,7 @@ export function UploadPage() {
         />
       )}
 
-      {selectedFile && !isUploading && (
+      {selectedFile && stage === 'idle' && (
         <Box>
           <BlueprintPreview file={selectedFile} onRemove={handleRemoveFile} />
           <Button
@@ -71,7 +71,7 @@ export function UploadPage() {
         </Box>
       )}
 
-      {isUploading && stage !== 'idle' && (
+      {stage !== 'idle' && (
         <UploadProgress
           stage={stage as 'requesting' | 'uploading' | 'processing' | 'success'}
           progress={progress}

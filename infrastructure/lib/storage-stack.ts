@@ -43,9 +43,9 @@ export class StorageStack extends cdk.Stack {
         {
           allowedOrigins: [
             process.env.FRONTEND_URL || 'http://localhost:5173',
-            // Add production URLs here
-            // 'https://your-production-domain.com',
-            // 'https://your-cloudfront-distribution.cloudfront.net',
+            'http://localhost:3000',
+            'http://localhost:5174',
+            'https://location-detection-ai-frontend.vercel.app',
           ],
           allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT, s3.HttpMethods.POST],
           allowedHeaders: ['*'],

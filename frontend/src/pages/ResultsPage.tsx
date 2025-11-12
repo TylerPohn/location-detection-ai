@@ -21,6 +21,7 @@ import { RoomList } from '@/components/Visualization/RoomList';
 import { RoomDetailsPanel } from '@/components/Visualization/RoomDetailsPanel';
 import { SkeletonCard } from '@/components/Loading/SkeletonCard';
 import { RetryError } from '@/components/Error/RetryError';
+import { UploadProgress } from '@/components/Upload/UploadProgress';
 import { exportRoomsAsJSON, exportRoomsAsCSV } from '@/utils/export';
 import { ROUTES } from '@/types/routes';
 import type { Room } from '@/types/api';
@@ -85,6 +86,16 @@ export function ResultsPage() {
           )}
         </Box>
       </Box>
+
+      {/* Show pizza tracker when job is processing or completed */}
+      {data && (data.status === 'processing' || data.status === 'completed') && (
+        <Box sx={{ mb: 3 }}>
+          <UploadProgress
+            stage={data.status === 'completed' ? 'success' : 'processing'}
+            progress={100}
+          />
+        </Box>
+      )}
 
       <Box sx={{ mb: 3 }}>
         <JobStatus jobId={jobId} />
